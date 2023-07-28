@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-//import './index.css'; 
+import './index.css'; // Assuming you have a separate CSS file for styling
 import { data } from './data.js';
 
 class App extends Component {
@@ -8,27 +8,30 @@ class App extends Component {
     this.state = {
       contacts: data,
       search: '',
+      selectedContact: null,
     };
   }
 
-  // const sortName = () => {
-  //   this.setState({
-  //     contacts: this.state.contacts.sort((a, b) => {
-  //       return a.first_name.toLowerCase() < b.first_name.toLowerCase()
-  //         ? -1
-  //         : a.first_name.toLowerCase() > b.first_name.toLowerCase()
-  //         ? 1
-  //         : 0;
-  //     }),
-  //   });
-  // };
-
   handleSearchChange = (e) => {
-    this.setState({ search: e.target.value });
+    this.setState({ search: e.target.value, selectedContact: null });
+  };
+
+  handleContactSelect = (e) => {
+    const selectedContactId = parseInt(e.target.value);
+    const selectedContact = this.state.contacts.find(
+      (contact) => contact.id === selectedContactId
+    );
+    this.setState({ selectedContact });
   };
 
   render() {
-    const { contacts, search } = this.state;
+    const { contacts, search, selectedContact } = this.state;
+
+    const filteredContacts = contacts.filter((item) => {
+      return search.toLowerCase() === ''
+        ? item
+        : item.first_name.toLowerCase().includes(search);
+    });
 
     return (
       <div>
@@ -44,17 +47,25 @@ class App extends Component {
         </div>
 
         <div>
-          {contacts
-            .filter((item) => {
-              return search.toLowerCase() === ''
-                ? item
-                : item.first_name.toLowerCase().includes(search);
-            })
-            .map((item, index) => (
-              <ul key={index}>
-                <li>{item.first_name}</li>
-              </ul>
+          <select
+            className='form-control'
+            value={selectedContact ? selectedContact.id : ''}
+            onChange={this.handleContactSelect}
+          >
+            <option value=''>Select a contact</option>
+            {filteredContacts.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.first_name}
+              </option>
             ))}
+          </select>
+
+          {selectedContact && (
+            <div>
+              <h2>Selected Contact:</h2>
+              <p>{selectedContact.first_name}</p>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -62,3 +73,15 @@ class App extends Component {
 }
 
 export default App;
+
+
+
+// <select>
+//   {this.props.data.options.map((option, index) => {
+//     return (
+//       <option value={option.value} key={option + index}>
+//         {option.text}
+//       </option>
+//     );
+//   })}
+// </select>
