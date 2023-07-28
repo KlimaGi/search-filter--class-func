@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import './index.css'; // Assuming you have a separate CSS file for styling
+import './index.css';
 import { data } from './data.js';
 
 class App extends Component {
@@ -9,11 +9,16 @@ class App extends Component {
       contacts: data,
       search: '',
       selectedContact: null,
+      isDropdownOpen: false, // State to track whether the dropdown is open
     };
   }
 
   handleSearchChange = (e) => {
-    this.setState({ search: e.target.value, selectedContact: null });
+    const value = e.target.value;
+    this.setState({ search: value, isDropdownOpen: true });
+    if (value === '') {
+      this.setState({ selectedContact: null });
+    }
   };
 
   handleContactSelect = (e) => {
@@ -21,11 +26,15 @@ class App extends Component {
     const selectedContact = this.state.contacts.find(
       (contact) => contact.id === selectedContactId
     );
-    this.setState({ selectedContact });
+    this.setState({ selectedContact, isDropdownOpen: false });
+  };
+
+  closeDropdown = () => {
+    this.setState({ isDropdownOpen: false });
   };
 
   render() {
-    const { contacts, search, selectedContact } = this.state;
+    const { contacts, search, selectedContact, isDropdownOpen } = this.state;
 
     const filteredContacts = contacts.filter((item) => {
       return search.toLowerCase() === ''
@@ -35,7 +44,7 @@ class App extends Component {
 
     return (
       <div>
-        <h1 className='text-center mt-4'>Contacts</h1>
+        <h1 className='text-center mt-4'>Contact Keeper</h1>
         <div className='form-container'>
           <input
             type='text'
@@ -46,42 +55,27 @@ class App extends Component {
           />
         </div>
 
-        <div>
-          <select
-            className='form-control'
-            value={selectedContact ? selectedContact.id : ''}
-            onChange={this.handleContactSelect}
-          >
-            <option value=''>Select a contact</option>
-            {filteredContacts.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.first_name}
-              </option>
-            ))}
-          </select>
 
-          {selectedContact && (
-            <div>
-              <h2>Selected Contact:</h2>
-              <p>{selectedContact.first_name}</p>
-            </div>
-          )}
-        </div>
+        <select
+          value={selectedContact ? selectedContact.id : ''}
+          onChange={this.handleContactSelect}
+          onBlur={this.closeDropdown}
+          size={isDropdownOpen ? (filteredContacts.length < 20 ? filteredContacts.length : '20') : '1'}
+        >
+          <option value=''>Select a contact</option>
+          {filteredContacts.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.first_name}
+            </option>
+          ))}
+        </select>
+
+
+
+
       </div>
     );
   }
 }
 
 export default App;
-
-
-
-// <select>
-//   {this.props.data.options.map((option, index) => {
-//     return (
-//       <option value={option.value} key={option + index}>
-//         {option.text}
-//       </option>
-//     );
-//   })}
-// </select>
